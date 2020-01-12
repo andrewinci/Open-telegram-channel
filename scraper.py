@@ -16,7 +16,7 @@ class OpenScraper(object):
         article = self._download_page_tree(url)
         return {
             "title": self._get_meta_property(article, "og:title")[0],
-            "img_url": self._get_meta_property(article, "og:image")[0],
+            "img": self._get_meta_property(article, "og:image")[0],
             "description": self._get_meta_property(article, "og:description")[0],
             "url": url,
             "tags": self._get_meta_property(article, "article:tag"),
@@ -53,20 +53,20 @@ class TelegramChannelHelper(object):
             line = line.replace(s, "")
         return line
 
-    def publish(self, article):
+    def publish_img(self, article):
         print(article)
         url = urllib.parse.quote(self.bot_key)
-        url += "/sendMessage?"
+        url += "/sendPhoto?"
         url += f"chat_id={self.channel_id}"
+        url += f"&photo={urllib.parse.quote(article['img'])}"
         url += f"&parse_mode=markdown"
         url += "&disable_web_page_preview=true"
-        url += "&text=" + urllib.parse.quote(
+        url += "&caption=" + urllib.parse.quote(
             f"*{article['title']}*"
             + f"\n{article['description']}"
             + f"\n{self._prepare_tag_line(article['tags'])}"
             + f"\n{article['url']}"
         )
-        print(urllib.parse.urljoin(self.base_url, url))
         urllib.request.urlopen(urllib.parse.urljoin(self.base_url, url))
 
 
@@ -84,7 +84,7 @@ class OpenLambda(object):
         urls_to_publish = [a for a in article_urls if not self.already_published(a)]
         for url in urls_to_publish:
             article = self.scraper.parse_article(url)
-            self.tg_helper.publish(article)
+            self.tg_helper.publish_img(article)
 
 
 channel_id = os.environ.get('TGCHANNELID')
