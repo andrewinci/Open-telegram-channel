@@ -71,24 +71,41 @@ class TelegramChannelHelper(object):
 
 
 class OpenLambda(object):
-    def __init__(self, scraper, tg_helper):
+    def __init__(self, scraper, tg_helper, repo):
         self.scraper = scraper
         self.tg_helper = tg_helper
-
-    def already_published(self, url):
-        # todo: implement
-        return False
+        self.repo = repo
 
     def handle(self, event, context):
         article_urls = self.scraper.get_article_urls(datetime.now())
-        urls_to_publish = [a for a in article_urls if not self.already_published(a)]
+        urls_to_publish = [
+            a for a in article_urls if not self.repo.already_published(a)
+        ]
         for url in urls_to_publish:
             article = self.scraper.parse_article(url)
             self.tg_helper.publish_img(article)
+            self.repo.add(url)
 
 
-channel_id = os.environ.get('TGCHANNELID')
-bot_key = os.environ.get('TGBOTKEY')
+class LocalRepo(object):
+    def __init__(self, repo_name):
+        self.repo_name = f".{repo_name}"
+        if self.repo_name not in os.listdir():
+            open(self.repo_name, "w").close()
+
+    def add(self, text):
+        with open(self.repo_name, "a") as repo:
+            repo.write(f"{text}\n")
+
+    def already_published(self, text):
+        with open(self.repo_name, "r") as repo:
+            return f"{text}\n" in repo.readlines()
+
+
+channel_id = os.environ.get("TGCHANNELID")
+bot_key = os.environ.get("TGBOTKEY")
 tg_helper = TelegramChannelHelper(channel_id, bot_key)
-openLambda = OpenLambda(OpenScraper(), tg_helper)
+news_repo = LocalRepo("test_repo")
+openLambda = OpenLambda(OpenScraper(), tg_helper, news_repo)
+
 openLambda.handle(None, None)
