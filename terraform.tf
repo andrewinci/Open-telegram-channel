@@ -36,6 +36,10 @@ resource "aws_lambda_permission" "scrape-open-permission" {
   source_arn    = "${aws_cloudwatch_event_rule.scrap-scheduled-event-rule.arn}"
 }
 
+resource "aws_iam_role_policy_attachment" "lambda_access_cloudwatch_policy" {
+  role       = "${aws_iam_role.telegram_open_role.id}"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
 
 resource "aws_iam_role" "telegram_open_role" {
   name = "telegram-open-role"
