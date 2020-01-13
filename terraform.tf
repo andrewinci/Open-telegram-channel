@@ -102,7 +102,7 @@ resource "aws_dynamodb_table" "open_daily_history" {
 resource "aws_cloudwatch_event_rule" "scrap-scheduled-event-rule" {
   name                = "scheduled-scrap"
   description         = "Scrap open news"
-  schedule_expression = "rate(5 minutes)"
+  schedule_expression = "rate(15 minutes)"
 }
 
 resource "aws_cloudwatch_event_target" "scarap-target" {

@@ -84,6 +84,7 @@ class OpenLambda(object):
         urls_to_publish = [
             a for a in article_urls if not self.repo.already_published(a)
         ]
+        urls_to_publish.reverse()
         for url in urls_to_publish:
             article = self.scraper.parse_article(url)
             self.tg_helper.publish_img(article)
