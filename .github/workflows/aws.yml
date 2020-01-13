@@ -54,7 +54,7 @@ jobs:
         region: 'eu-west-1' 
         # Comma-separated string of Terraform variables
         variables: 
-          TF_VAR_telegram_bot_key=${{ secrets.TG_BOT_KEY }}
-          TF_VAR_telegram_channel_id='@open_giornale_unofficial'
+          telegram_bot_key=${{ secrets.TG_BOT_KEY }}
+          telegram_channel_id='@open_giornale_unofficial'
         path: .
     
