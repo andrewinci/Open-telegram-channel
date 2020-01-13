@@ -9,5 +9,3 @@ pushd ./package
 zip -r9 ../function.zip .
 popd
 zip -j function.zip scraper.py
-
-rm -r package 2> /dev/null
