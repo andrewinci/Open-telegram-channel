@@ -1,6 +1,7 @@
 # Telegram channel for Open online
 
-Telegram channel for Open news.
+Telegram channel for [Open](https://www.open.online).
+Channel available at [Open telegram channel](https://t.me/open_giornale_unofficial).
 
 ## How to use
 
