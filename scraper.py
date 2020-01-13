@@ -3,6 +3,8 @@ import urllib.parse
 from datetime import datetime
 from lxml import html
 import os
+import boto3
+import time
 
 
 class OpenScraper(object):
@@ -67,6 +69,7 @@ class TelegramChannelHelper(object):
             + f"\n{self._prepare_tag_line(article['tags'])}"
             + f"\n{article['url']}"
         )
+
         urllib.request.urlopen(urllib.parse.urljoin(self.base_url, url))
 
 
@@ -102,10 +105,28 @@ class LocalRepo(object):
             return f"{text}\n" in repo.readlines()
 
 
+class DyanomoDbRepo(object):
+    def __init__(self):
+        dynamodb = boto3.resource("dynamodb")
+        self.table = dynamodb.Table("open_daily_history")
+
+    def add(self, text):
+        self.table.put_item(Item={"url": text, "ttl": int(time.time() + 60 * 60 * 48)})
+
+    def already_published(self, text):
+        t = self.table.get_item(Key={"url": text})
+        return t.get("Item") is not None
+
+
 channel_id = os.environ.get("TGCHANNELID")
 bot_key = os.environ.get("TGBOTKEY")
 tg_helper = TelegramChannelHelper(channel_id, bot_key)
-news_repo = LocalRepo("test_repo")
-openLambda = OpenLambda(OpenScraper(), tg_helper, news_repo)
 
-openLambda.handle(None, None)
+if os.environ.get("LOCAL") is not None:
+    news_repo = LocalRepo("test_repo")
+    openLambda = OpenLambda(OpenScraper(), tg_helper, news_repo)
+    openLambda.handle(None, None)
+else:
+    news_repo = DyanomoDbRepo()
+    openLambda = OpenLambda(OpenScraper(), tg_helper, news_repo)
+    handle = openLambda.handle
